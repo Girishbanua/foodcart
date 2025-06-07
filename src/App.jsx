@@ -2,6 +2,7 @@ import React from "react";
 import data from "../data.json";
 import { useState } from "react";
 const App = () => {
+  const [productList, setProductList] = useState([]);
   return (
     <main className="p-[6vw] xl:px-[7vw]">
       <ConfirmModal />
@@ -28,7 +29,13 @@ const App = () => {
                       src={products.image.desktop}
                       alt={products.category}
                     />
-                  <AddToCart />
+                    <AddToCart
+                      pid={products.id}
+                      pname={products.name}
+                      price={products.price}
+                      productList={productList}
+                      setProductList={setProductList}
+                    />
                   </div>
 
                   <div className="mt-10">
@@ -52,8 +59,7 @@ const App = () => {
             <img src="/images/illustration-empty-cart.svg" alt="emptty-cart" />
             <p className="text-Rose-500">Your added items will appear here</p>
           </div>
-          <AddedProduct />
-          <AddedProduct />
+          <AddedProduct plist={productList} />
           <div className="flex justify-between items-center">
             <p className="capitalize text-Rose-900">order total</p>
             <h1 className="text-3xl font-bold">₹ 599.90</h1>
@@ -81,7 +87,6 @@ const App = () => {
 export default App;
 
 export function IncDecButton(props) {
-  
   return (
     <div className="bg-Red flex items-center text-Rose-50 justify-around absolute w-[145px] h-[40px] rounded-full left-15 -bottom-5 z-20">
       <button
@@ -92,7 +97,9 @@ export function IncDecButton(props) {
       </button>
       <p>{props.quantity}</p>
       <button
-        onClick={() => props.quantity < 10 && props.setQuantity(props.quantity + 1)}
+        onClick={() =>
+          props.quantity < 10 && props.setQuantity(props.quantity + 1)
+        }
         className="outline-2 outline-Rose-100 rounded-full p-1"
       >
         <img src="/images/icon-increment-quantity.svg" alt="+" />
@@ -100,39 +107,67 @@ export function IncDecButton(props) {
     </div>
   );
 }
-export function AddToCart(){
-  const [visible, setVisible] = useState(true)
-  const [quantity, setQuantity] = useState(0);
-  const handleQuantity = () => {    
-    quantity < 1 ? setVisible(true) : setQuantity(quantity - 1)
-  }
-  return(    
-      visible ?  <button className="addtoCart" onClick={() => setVisible(false)}>
+export function AddToCart(props) {
+  const [visible, setVisible] = useState(true);
+  const [quantity, setQuantity] = useState(1);
+  const handleQuantity = () => {
+    quantity < 2 ? setVisible(true) : setQuantity(quantity - 1);
+  };
+  const handleAdd = (product) => {
+    setVisible(false);
+    {
+      console.log("product:", product);
+    }
+    props.setProductList([...props.productList, product]);
+    {
+      console.log("product list: ", props.productList);
+    }
+  };
+  return visible ? (
+    <button
+      className="addtoCart"
+      onClick={() =>
+        handleAdd({ id: props.pid, pname: props.pname, price: props.price })
+      }
+    >
       <img src="/images/icon-add-to-cart.svg" alt="cart-icon" />
       Add to cart
-    </button> :
-    <IncDecButton visible={visible} setVisible={setVisible} quantity={quantity} setQuantity={setQuantity} handleQuantity={handleQuantity}/>     
-  )
+    </button>
+  ) : (
+    <IncDecButton
+      visible={visible}
+      setVisible={setVisible}
+      quantity={quantity}
+      setQuantity={setQuantity}
+      handleQuantity={handleQuantity}
+    />
+  );
 }
-export function AddedProduct() {
+export function AddedProduct({ plist }) {
   return (
-    <div className="my-5 flex items-center justify-between pb-4 border-b-2 border-Rose-100 rounded-b-lg">
-      <div className="flex flex-col justify-between ">
-        <h3 className="font-semibold">Product Name</h3>
-        <div className="flex gap-4">
-          <span className="text-Red font-bold">1x</span>
-          <p className="text-Rose-400">@ ₹599.90</p>
-          <p className="text-Rose-500 font-semibold">@ ₹599.90</p>
-        </div>
-      </div>
-      <button className="hover:invert transition-all ease-in-out duration-200 ">
-        <img
-          className="outline-2 outline-Rose-300 rounded-full p-1"
-          src="/images/icon-remove-item.svg"
-          alt="remove"
-        />
-      </button>
-    </div>
+    <>
+      {plist.map((itemsAdded,id) => {
+        return (
+          <div key={id} className="my-5 flex items-center justify-between pb-4 border-b-2 border-Rose-100 rounded-b-lg">
+            <div className="flex flex-col justify-between "> 
+              <h3 className="font-semibold">{itemsAdded.pname}</h3>
+              <div className="flex gap-4">
+                <span className="text-Red font-bold">1x</span>
+                <p className="text-Rose-400">@ ₹ {itemsAdded.price}</p>
+                <p className="text-Rose-500 font-semibold">@ ₹ {itemsAdded.price}</p>
+              </div>
+            </div>
+            <button className="hover:invert transition-all ease-in-out duration-200 ">
+              <img
+                className="outline-2 outline-Rose-300 rounded-full p-1"
+                src="/images/icon-remove-item.svg"
+                alt="remove"
+              />
+            </button>
+          </div>
+        );
+      })}
+    </>
   );
 }
 
