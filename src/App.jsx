@@ -104,8 +104,9 @@ export function IncDecButton(props) {
       </button>
       <p>{props.quantity}</p>
       <button
-        onClick={() =>
-          props.quantity < 10 && props.setQuantity(props.quantity + 1)
+        onClick={
+          // props.quantity < 10 && props.setQuantity(props.quantity + 1)
+          props.handleAdd
         }
         className="outline-2 outline-Rose-100 rounded-full p-1"
       >
@@ -116,7 +117,7 @@ export function IncDecButton(props) {
 }
 export function AddToCart(props) {
   const [visible, setVisible] = useState(true);
-  const [quantity, setQuantity] = useState(1);
+  const [quantity, setQuantity] = useState(0);
   const handleQuantity = () => {
     quantity < 2 ? setVisible(true) : setQuantity(quantity - 1);
   };
@@ -125,13 +126,15 @@ export function AddToCart(props) {
     const existingProductIndex = props.productList.findIndex(
       (item) => item.id === props.pid
     );
+    setQuantity(quantity + 1)
 
     if (existingProductIndex !== -1) {
-      // product already in cart, increase quantity
+      // product already in cart, increase quantity      
       const updatedList = [...props.productList];
       updatedList[existingProductIndex].quantity += 1;
       props.setProductList(updatedList);
     } else {
+      setQuantity(quantity + 1)
       // new product, add with quantity 1
       props.setProductList([
         ...props.productList,
@@ -152,6 +155,7 @@ export function AddToCart(props) {
       quantity={quantity}
       setQuantity={setQuantity}
       handleQuantity={handleQuantity}
+      handleAdd={handleAdd}
     />
   );
 }
