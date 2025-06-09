@@ -53,8 +53,10 @@ const App = () => {
         {/* cart section */}
         <section className="cart w-full grow bg-white p-4 md:p-6 mt-10 md:mt-0 rounded-xl shadow-lg">
           <h1 className="text-[6vw] md:text-[2vw] font-bold text-Red">
-            Your cart (0)
+            Your cart (
+            {productList.reduce((acc, curr) => acc + curr.quantity, 0)})
           </h1>
+
           <div className="mt-10 flex flex-col items-center justify-center">
             <img src="/images/illustration-empty-cart.svg" alt="emptty-cart" />
             <p className="text-Rose-500">Your added items will appear here</p>
@@ -62,7 +64,12 @@ const App = () => {
           <AddedProduct plist={productList} />
           <div className="flex justify-between items-center">
             <p className="capitalize text-Rose-900">order total</p>
-            <h1 className="text-3xl font-bold">₹ 599.90</h1>
+            <h1 className="text-3xl font-bold">
+              ₹{" "}
+              {productList
+                .reduce((total, item) => total + item.price * item.quantity, 0)
+                .toFixed(2)}
+            </h1>
           </div>
           <div className="flex select-none mt-7 items-center justify-center gap-2 bg-Rose-100 h-[70px] rounded-lg ">
             <img
@@ -113,23 +120,28 @@ export function AddToCart(props) {
   const handleQuantity = () => {
     quantity < 2 ? setVisible(true) : setQuantity(quantity - 1);
   };
-  const handleAdd = (product) => {
+  const handleAdd = () => {
     setVisible(false);
-    {
-      console.log("product:", product);
-    }
-    props.setProductList([...props.productList, product]);
-    {
-      console.log("product list: ", props.productList);
+    const existingProductIndex = props.productList.findIndex(
+      (item) => item.id === props.pid
+    );
+
+    if (existingProductIndex !== -1) {
+      // product already in cart, increase quantity
+      const updatedList = [...props.productList];
+      updatedList[existingProductIndex].quantity += 1;
+      props.setProductList(updatedList);
+    } else {
+      // new product, add with quantity 1
+      props.setProductList([
+        ...props.productList,
+        { id: props.pid, pname: props.pname, price: props.price, quantity: 1 },
+      ]);
     }
   };
+
   return visible ? (
-    <button
-      className="addtoCart"
-      onClick={() =>
-        handleAdd({ id: props.pid, pname: props.pname, price: props.price })
-      }
-    >
+    <button className="addtoCart" onClick={handleAdd}>
       <img src="/images/icon-add-to-cart.svg" alt="cart-icon" />
       Add to cart
     </button>
@@ -146,15 +158,20 @@ export function AddToCart(props) {
 export function AddedProduct({ plist }) {
   return (
     <>
-      {plist.map((itemsAdded,id) => {
+      {plist.map((item, id) => {
         return (
-          <div key={id} className="my-5 flex items-center justify-between pb-4 border-b-2 border-Rose-100 rounded-b-lg">
-            <div className="flex flex-col justify-between "> 
-              <h3 className="font-semibold">{itemsAdded.pname}</h3>
+          <div
+            key={id}
+            className="my-5 flex items-center justify-between pb-4 border-b-2 border-Rose-100 rounded-b-lg"
+          >
+            <div className="flex flex-col justify-between ">
+              <h3 className="font-semibold">{item.pname}</h3>
               <div className="flex gap-4">
-                <span className="text-Red font-bold">1x</span>
-                <p className="text-Rose-400">@ ₹ {itemsAdded.price}</p>
-                <p className="text-Rose-500 font-semibold">@ ₹ {itemsAdded.price}</p>
+                <span className="text-Red font-bold">{item.quantity}x</span>
+                <p className="text-Rose-400">@ ₹ {item.price}</p>
+                <p className="text-Rose-500 font-semibold">
+                  @ ₹ {item.quantity * item.price}
+                </p>
               </div>
             </div>
             <button className="hover:invert transition-all ease-in-out duration-200 ">
